@@ -50,6 +50,19 @@ def parse_args():
 def main():
     args = parse_args()
     
+    # Module ask : configuration interactive avant l'entraînement
+    if args.load_cmd == 'load' and args.load_path == 'ask':
+        from agent.ask import run_ask_session
+        ask_config = run_ask_session()
+        args.sessions = ask_config['sessions']
+        args.save = ask_config['save']
+        args.visual = ask_config['visual']
+        args.dontlearn = ask_config['dontlearn']
+        args.step_by_step = ask_config['step_by_step']
+        # Mise à jour du chemin de modèle fourni via le module ask
+        args.load_path = ask_config['load_path']
+        args.load_cmd = 'load' if args.load_path else None
+
     # Initialisation de l'environnement et de l'Agent
     board_size = 10
     env = Learn2SlitherEnv(board_size=board_size, max_board_size=40)
