@@ -1,0 +1,5 @@
+numpy==1.26.4
+pygame==2.5.2
+gymnasium==0.29.1
+torch==2.2.1
+flake8==7.0.0

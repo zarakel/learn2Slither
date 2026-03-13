@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  agent:
+    build: .
+    container_name: learn2slither_env
+    # On monte le dossier courant dans /app pour que les modifications 
+    # de code n'exigent pas de reconstruire l'image à chaque fois.
+    volumes:
+      - .:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    environment:
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=${XAUTHORITY}
+      - LIBGL_ALWAYS_SOFTWARE=1   # Force le rendu logiciel (règle le problème MESA)
+      - SDL_VIDEODRIVER=x11
+    devices:
+      - /dev/dri:/dev/dri         # Donne l'accès au matériel graphique au conteneur
+    # Nécessaire pour l'affichage graphique sous Linux
+    network_mode: host
+    # stdin_open et tty permettent de garder le terminal interactif 
+    # pour saisir les commandes clavier (z, q, s, d)
+    stdin_open: true
+    tty: true
