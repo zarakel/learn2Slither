@@ -93,9 +93,12 @@ def main():
                         pygame.quit()
                         return
                         
-            # 1. L'agent choisit une action (Exploration ou Exploitation)
-            # Si -dontlearn est activé, learn_mode est False [cite: 172-174]
-            action = agent.select_action(state, learn_mode=not args.dontlearn)
+            # 1. L'agent choisit une action
+            # On calcule un "boost d'exploration" très léger pour débloquer les boucles infinies 
+            # (seulement si le serpent stagne vraiment, et max +10% pour éviter qu'il ne se suicide au hasard)
+            steps = env.steps_without_green if hasattr(env, 'steps_without_green') else 0
+
+            action = agent.select_action(state, learn_mode=not args.dontlearn, frustration_boost=0.0)
             
             # 2. L'environnement exécute l'action
             next_state, reward, is_dead, _, _ = env.step(action)
@@ -105,8 +108,10 @@ def main():
             if not args.dontlearn:
                 # L'agent mémorise cette expérience
                 agent.memory.push(state, action, reward, next_state, is_dead)
-                # L'agent met à jour son réseau de neurones
-                agent.optimize_model()
+                
+                # Apprentissage
+                if len(agent.memory) > agent.batch_size:
+                    agent.optimize_model()
             
             state = next_state
 
