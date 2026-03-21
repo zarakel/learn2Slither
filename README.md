@@ -1,65 +1,54 @@
-**Commandes d'Exécution (via Docker & Makefile)**
+# Learn2Slither : Architecture & Techniques d'Apprentissage par Renforcement
 
-Le projet est entièrement conteneurisé pour éviter les problèmes de dépendances locales.
+Ce projet implémente un agent d'Intelligence Artificielle (Deep Reinforcement Learning) capable d'apprendre à jouer au jeu Snake par lui-même, tout en respectant des contraintes académiques strictes (vision en croix uniquement).
 
-*1. Construire l'image Docker :*
+---
 
-   make build
+## 1. Le Cerveau : Double Deep Q-Network (DDQN)
+Plutôt qu'un simple Q-Learning (impossible avec un grand nombre d'états) ou un DQN classique, nous utilisons un **Double-DQN (DDQN)**.
+- **Le Problème du DQN classique** : Il a tendance à surestimer les Q-Values (la récompense attendue), ce qui pousse le serpent à prendre des décisions trop optimistes et à foncer dans les murs en pensant survivre.
+- **La Solution DDQN** : Nous utilisons deux réseaux de neurones. Le `Policy Network` choisit la meilleure action, et le `Target Network` (mis à jour plus lentement) évalue la valeur de cette action. Cela stabilise considérablement l'apprentissage mathématique.
 
-*3. Entraîner un nouveau modèle (Mode invisible et rapide) :*
-Exemple pour entraîner l'agent sur 1000 sessions et sauvegarder son cerveau:
+## 2. La Vision du Serpent : Représentation Continue (L'Astuce Principale)
+Le sujet (PDF) imposait une contrainte majeure : **Le serpent ne peut voir qu'en ligne droite dans 4 directions (Haut, Bas, Gauche, Droite)**. Interdiction de lui donner les coordonnées absolues (X, Y) sous peine d'un malus de -42 points.
 
-    docker compose run --rm agent python main.py -sessions 1000 -save models/1000sess.txt -visual off
+- **L'Ancienne tentative (Catégorielle)** : Au début, le serpent voyait des "blocs" (ex: [Mur, Vide, Pomme]). Mais un réseau de neurones a beaucoup de mal à déduire des distances à partir de listes variables d'objets ou d'identifiants (Embeddings).
+- **Le Game Changer (Distance Inverse)** : Nous avons transformé sa vision en **valeurs continues normalisées (Float32 entre 0.0 et 1.0)**. 
+  Pour chaque direction, l'agent calcule `1.0 / distance` jusqu'au prochain :
+  1. `Mur`
+  2. `Corps (Queue)`
+  3. `Pomme Verte`
+  4. `Pomme Rouge`
+  
+  *Pourquoi 1/distance ?* Si une pomme est à 1 case, la valeur est `1.0` (signal très fort). Si elle est à 10 cases, la valeur est `0.1`. Si l'objet n'existe pas dans cette direction, la valeur est `0.0`. Le réseau comprend désormais intuitivement la notion de **proximité et de danger immédiat**.
 
-*4. Regarder l'agent jouer (Mode Exploitation) :*
-Charge un modèle entraîné et désactive l'apprentissage aléatoire (-dontlearn) pour observer son intelligence pure:
+## 3. La Mémoire à Court-Terme : Le Frame Stacking
+Le jeu de Snake est un **POMDP** (Partially Observable Markov Decision Process). Si l'on donne au serpent uniquement l'image de l'instant T, il ne peut pas savoir s'il monte ou s'il descend (il ne connaît pas sa vitesse/direction actuelle).
+- **Technique** : Nous empilons les **4 dernières frames** (visions) du serpent.
+- **Résultat** : L'état d'entrée n'est plus de 16 valeurs (4 directions × 4 caractéristiques), mais de **64 valeurs**. Le réseau de neurones peut déduire le mouvement (la dynamique) à partir de la différence entre ces 4 images temporelles.
 
-    docker compose run --rm agent python main.py -visual on load models/1000sess.txt -sessions 5 -dontlearn
+## 4. Architecture du Réseau de Neurones (MLP)
+Suite à l'abandon de la vision catégorielle, nous avons supprimé la couche `nn.Embedding` (qui ralentissait le CPU et n'était plus adaptée).
+- **Entrée** : `nn.Linear(64, 256)` (Prend les 64 floats de distance inverse spatio-temporelle).
+- **Couches cachées** : 256 -> 128 -> 64 (avec des activations `ReLU` pour la non-linéarité).
+- **Sortie** : `nn.Linear(64, 4)` (Prédit la valeur des 4 actions : Haut, Bas, Gauche, Droite).
+Cette structure 100% linéaire ("Fully Connected") est extrêmement rapide à calculer sur CPU, ce qui a permis de contourner les limitations de VirtualBox (pas de GPU physique détecté dans Docker).
 
-*5. Mode Pas-à-Pas (Debug) :*
-Permet de valider les décisions de l'agent frame par frame (appuyez sur Espace pour avancer):
+## 5. Le Système de Récompenses (Reward Shaping)
+Pour guider le serpent sans le perturber :
+- `+1.0` : Manger une pomme verte (objectif principal).
+- `-1.0` : Mourir (mur, propre queue, pomme rouge).
+- **L'Astuce d'Apprentissage** : Nous avons retiré les micro-récompenses continues (ex: "se rapprocher de la pomme donne +0.01"). Bien que tentantes, ces récompenses "denses" créent du bruit et poussent souvent l'agent à tourner en rond pour accumuler des micro-points au lieu de manger la pomme. *Less is more*.
 
-    docker compose run --rm agent python main.py -visual on load models/1000sess.txt -sessions 1 -dontlearn -step-by-step
+## 6. Infrastructure & Docker (Contournement Hardware)
+Le développement sous GUI Linux / VirtualBox empêchait l'accès natif à l'accélération X11 (interface graphique) et au GPU (Nvidia) depuis Docker.
+- **Solution d'entraînement** : Entraînement en mode `headless` (sans interface visuelle) via l'argument `-visual off`. Pygame est désactivé en fond de tâche, ce qui multiplie la vitesse d'apprentissage de l'agent par 100.
+- **Solution de débogage visuel** : Ouverture du serveur graphique X11 à Docker localement via `xhost +local:docker`, permettant d'évaluer le modèle `.pth` avec l'argument `-visual on`.
 
-***Learn2Slither - Reinforcement Learning***
+## Commandes Importantes
 
-Ce projet implémente un agent d'Intelligence Artificielle capable d'apprendre à jouer au jeu Snake par lui-même en utilisant l'Apprentissage par Renforcement (Reinforcement Learning).
+*Entraîner le Cerveau (1000 sessions, mode rapide) :*
+`docker compose run --rm agent python main.py -sessions 1000 -save models/1000sess.pth -visual off`
 
-Le Concept Principal : L'Apprentissage par Renforcement (RL)
-
-L'Apprentissage par Renforcement est un paradigme où un agent intelligent apprend des stratégies de décision optimales en interagissant avec son environnement. Contrairement à la programmation classique, l'agent apprend par essais et erreurs.
-À chaque action, l'environnement lui renvoie un retour sous forme de récompenses (manger une pomme verte) ou de punitions (heurter un mur, manger une pomme rouge). L'agent adapte ensuite son comportement pour maximiser ses récompenses sur le long terme.
-
-*Les Q-Fonctions et le Deep Q-Learning*
-
-Pour prendre ses décisions, l'agent utilise une Fonction Q (Quality function) qui évalue la pertinence d'une action donnée dans un état spécifique.
-
-Plutôt que d'utiliser une simple "Q-Table" (qui deviendrait obsolète si la taille du plateau change), ce projet utilise le Deep Q-Learning (DQN).
-
-    Le Modèle : Un réseau de neurones artificiels prend en entrée la "vision" du serpent (ce qu'il voit dans les 4 directions depuis sa tête ).
-
-    La Sortie : Le réseau prédit 4 "Q-values" correspondant aux 4 actions possibles (Haut, Bas, Gauche, Droite).
-
-    L'Apprentissage : Le réseau est mis à jour itérativement  grâce à l'équation de Bellman, en utilisant une mémoire des expériences passées (Replay Buffer) et un réseau cible (Target Network) pour stabiliser les mathématiques.
-
-*Librairies Principales*
-
-    gymnasium : Le standard de l'industrie pour les environnements RL. Il structure le code autour d'une boucle simple : l'agent envoie une action via la méthode env.step(action), et l'environnement retourne (observation, reward, terminated, truncated, info).
-
-    PyTorch (torch) : Utilisé pour construire et entraîner le réseau de neurones (le cerveau de l'agent).
-
-    pygame : Utilisé pour générer l'interface graphique du jeu et afficher le plateau, le serpent et les pommes en temps réel.
-
-*Architecture des Modules*
-
-Le code respecte une séparation stricte des responsabilités (Architecture Modulaire):
-
-    environment/board.py (L'Environnement Physique) : Gère uniquement la logique du jeu sur une grille de 10x10. Il gère les déplacements, les collisions (murs, queue) , et l'apparition aléatoire des pommes (2 vertes, 1 rouge).
-
-    environment/env.py (L'Interpréteur Gymnasium) : Fait le pont entre le jeu et l'IA. Il extrait la vision en forme de croix demandée (évitant ainsi la pénalité de -42 points) et calcule les récompenses numériques (Reward Shaping).
-
-    agent/model.py (Le Cerveau / PyTorch) : Contient la définition de l'architecture du Perceptron Multicouche (MLP).
-
-    agent/dqn_agent.py (L'Agent) : Gère la logique de choix d'action (balance entre Exploration et Exploitation)  et l'algorithme d'optimisation du réseau de neurones.
-
-    main.py (Le Point d'Entrée) : Gère le parsing des arguments du terminal , la boucle des sessions de jeu , et le rendu graphique Pygame.
+*Voir l'agent jouer (sans explorer aléatoirement) :*
+`docker compose run --rm agent python main.py -visual on load models/1000sess.pth -sessions 5 -dontlearn`
