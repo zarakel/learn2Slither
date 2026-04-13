@@ -112,7 +112,7 @@ class DQNAgent:
         self.epsilon = max(self.epsilon_end, self.epsilon * self.epsilon_decay)
 
     def save_model(self, filepath: str):
-        """Exporte le modèle avec ses métadonnées (checkpoint PyTorch) [cite: 165-167]."""
+        """Exporte le modèle avec ses métadonnées (checkpoint PyTorch)."""
         checkpoint = {
             'model_state_dict': self.policy_net.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
@@ -124,7 +124,7 @@ class DQNAgent:
         torch.save(checkpoint, filepath)
 
     def load_model(self, filepath: str):
-        """Importe un modèle et ses métadonnées depuis un fichier [cite: 165-167, 206-207]."""
+        """Importe un modèle et ses métadonnées depuis un fichier."""
         checkpoint = torch.load(filepath, map_location=self.device)
         if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
             self.policy_net.load_state_dict(checkpoint['model_state_dict'])

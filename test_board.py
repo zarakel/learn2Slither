@@ -34,7 +34,7 @@ def print_board(board: Board):
     print("-" * (board.size * 2 + 1))
 
 def main():
-    board = Board(size=10) # Grille de 10x10 [cite: 51]
+    board = Board(size=10) # Grille de 10x10
     
     mapping_touches = {
         'w': Action.UP.value,

@@ -11,9 +11,9 @@ CELL_SIZE = 40
 COLORS = {
     'BG': (240, 240, 240),
     'GRID': (200, 200, 200),
-    Cell.GREEN.value: (0, 255, 0),     # Pomme Verte [cite: 68]
-    Cell.RED.value: (255, 0, 0),       # Pomme Rouge [cite: 69]
-    Cell.BODY.value: (0, 0, 255),      # Corps du Serpent Bleu [cite: 70]
+    Cell.GREEN.value: (0, 255, 0),     # Pomme Verte
+    Cell.RED.value: (255, 0, 0),       # Pomme Rouge
+    Cell.BODY.value: (0, 0, 255),      # Corps du Serpent Bleu
     Cell.HEAD.value: (0, 0, 200)       # Tête légèrement plus sombre
 }
 
@@ -36,7 +36,7 @@ def draw_board(screen, env: Learn2SlitherEnv):
     pygame.display.flip()
 
 def parse_args():
-    """Gère les arguments de la ligne de commande selon le sujet [cite: 198-208]."""
+    """Gère les arguments de la ligne de commande selon le sujet."""
     parser = argparse.ArgumentParser(description="Learn2Slither - RL Snake")
     parser.add_argument('-sessions', type=int, default=1, help="Nombre de sessions d'entraînement")
     parser.add_argument('-save', type=str, default=None, help="Chemin pour sauvegarder le modèle")
@@ -60,7 +60,7 @@ def main():
     
     agent = DQNAgent(input_dim=input_dim, output_dim=output_dim)
 
-    # Chargement d'un modèle existant si demandé [cite: 206-207]
+    # Chargement d'un modèle existant si demandé
     if args.load_cmd == 'load' and args.load_path:
         if os.path.exists(args.load_path):
             agent.load_model(args.load_path)
@@ -69,7 +69,7 @@ def main():
             print(f"Erreur : Le fichier {args.load_path} n'existe pas.")
             return
 
-    # Configuration Pygame si le visuel est activé [cite: 63-65, 175]
+    # Configuration Pygame si le visuel est activé
     screen = None
     if args.visual == 'on':
         pygame.init()
@@ -79,7 +79,7 @@ def main():
     global_max_length = 0
     global_max_duration = 0
 
-    # --- BOUCLE PRINCIPALE DES SESSIONS --- [cite: 60-62]
+    # --- BOUCLE PRINCIPALE DES SESSIONS ---
     for session in range(1, args.sessions + 1):
         state, _ = env.reset()
         is_dead = False
@@ -144,10 +144,10 @@ def main():
             agent.update_target_network()
 
     # --- FIN DE L'ENTRAÎNEMENT ---
-    # Affichage exact demandé par le sujet [cite: 200, 208]
+    # Affichage exact demandé par le sujet
     print(f"Game over, max length = {global_max_length} max duration = {global_max_duration}")
 
-    # Sauvegarde du modèle [cite: 199-200]
+    # Sauvegarde du modèle
     if args.save:
         # Créer le dossier models/ s'il n'existe pas
         os.makedirs(os.path.dirname(args.save), exist_ok=True)
