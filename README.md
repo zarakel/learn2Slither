@@ -57,3 +57,6 @@ Le développement sous GUI Linux / VirtualBox empêchait l'accès natif à l'acc
 
 *Personnaliser la taille du plateau de jeu (ex: une grande carte de 20x20) :*
 `docker compose run --rm agent python main.py -board_size 20 -sessions 500 -visual off`
+
+*Débogage visuel pas-à-pas (met le jeu en pause après chaque action, idéal pour analyser les décisions de l'agent) :*
+`docker compose run --rm agent python main.py -visual on -step-by-step load models/1000sess.pth`
