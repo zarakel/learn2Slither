@@ -39,6 +39,7 @@ def parse_args():
     """Gère les arguments de la ligne de commande selon le sujet."""
     parser = argparse.ArgumentParser(description="Learn2Slither - RL Snake")
     parser.add_argument('-sessions', type=int, default=1, help="Nombre de sessions d'entraînement")
+    parser.add_argument('-board_size', type=int, default=10, help="Taille de la grille du jeu (ex: 10 pour 10x10)")
     parser.add_argument('-save', type=str, default=None, help="Chemin pour sauvegarder le modèle")
     parser.add_argument('-visual', choices=['on', 'off'], default='off', help="Activer l'affichage")
     parser.add_argument('-dontlearn', action='store_true', help="Désactiver l'apprentissage")
@@ -51,7 +52,7 @@ def main():
     args = parse_args()
     
     # Initialisation de l'environnement et de l'Agent
-    board_size = 10
+    board_size = args.board_size
     env = Learn2SlitherEnv(board_size=board_size, max_board_size=40)
     
     # input_dim = 4 directions * 4 caractéristiques * 4 frames = 64
