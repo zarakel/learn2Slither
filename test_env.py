@@ -52,7 +52,7 @@ def main():
     if is_dead:
         os.system('cls' if os.name == 'nt' else 'clear')
         env.render()
-        print("\n💥 GAME OVER ! L'agent a reçu la récompense fatale : -15.0")
+        print("\n GAME OVER ! L'agent a reçu la récompense fatale : -15.0")
 
 if __name__ == "__main__":
     main()

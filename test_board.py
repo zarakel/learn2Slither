@@ -66,7 +66,7 @@ def main():
             
     if board.is_game_over:
         print_board(board)
-        print("💥 GAME OVER ! (Mur, collision ou taille 0)")
+        print("GAME OVER ! (Mur, collision ou taille 0)")
 
 if __name__ == "__main__":
     main()
