@@ -20,7 +20,7 @@ class Cell(str, Enum):
     RED = 'R'
 
 class Board:
-    """Moteur physique agnostique du jeu Learn2Slither."""
+    """Moteur physique."""
     
     def __init__(self, size: int = 10):
         self.size = size

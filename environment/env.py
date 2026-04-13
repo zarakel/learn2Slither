@@ -22,7 +22,7 @@ class Learn2SlitherEnv(gym.Env):
     def __init__(self, board_size: int = 10, max_board_size: int = 40):
         super().__init__()
         self.board_size = board_size
-        self.max_board_size = max_board_size # Pour garantir la validation du Bonus
+        self.max_board_size = max_board_size
         
         self.board = Board(size=self.board_size)
         
@@ -58,21 +58,12 @@ class Learn2SlitherEnv(gym.Env):
 
     def step(self, action: int):
         """Exécute une action et renvoie (Observation, Récompense, Terminé, Tronqué, Info)."""
-        
-        # Distance avant le mouvement
-        old_dist = None
-        if len(self.board.snake) > 0 and self.board.green_apples:
-            hx, hy = self.board.snake[0]
-            old_dist = min(abs(hx - gx) + abs(hy - gy) for gx, gy in self.board.green_apples)
 
         is_dead, ate_green, ate_red = self.board.move(action)
         self.steps_without_green += 1
         
-        # 1. Calcul des récompenses (Reward Shaping)
+        # 1. Calcul des récompenses
         reward = -0.1 # Pénalité de temps pour le forcer à explorer rapidement
-        
-        # On ne donne plus de récompense de chaleur (distance), car cela crée du bruit 
-        # (POMDP problem: l'agent a des visions identiques pour des pommes placées différemment)
 
         # Pénalité sévère si le serpent tourne en rond trop longtemps
         max_steps_allowed = max(200, 100 * len(self.board.snake))

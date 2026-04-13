@@ -54,7 +54,7 @@ def main():
     board_size = 10
     env = Learn2SlitherEnv(board_size=board_size, max_board_size=40)
     
-    # input_dim = 4 directions * max_board_size (40) = 160
+    # input_dim = 4 directions * 4 caractéristiques * 4 frames = 64
     input_dim = env.observation_space.shape[0]
     output_dim = env.action_space.n # 4 actions
     
@@ -144,7 +144,6 @@ def main():
             agent.update_target_network()
 
     # --- FIN DE L'ENTRAÎNEMENT ---
-    # Affichage exact demandé par le sujet
     print(f"Game over, max length = {global_max_length} max duration = {global_max_duration}")
 
     # Sauvegarde du modèle

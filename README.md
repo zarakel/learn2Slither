@@ -1,6 +1,6 @@
 # Learn2Slither : Architecture & Techniques d'Apprentissage par Renforcement
 
-Ce projet implémente un agent d'Intelligence Artificielle (Deep Reinforcement Learning) capable d'apprendre à jouer au jeu Snake par lui-même, tout en respectant des contraintes académiques strictes (vision en croix uniquement).
+Ce projet implémente un agent d'Intelligence Artificielle (Deep Reinforcement Learning) capable d'apprendre à jouer au jeu Snake par lui-même, tout en respectant des contraintes strictes (vision en croix uniquement).
 
 ---
 
@@ -10,7 +10,7 @@ Plutôt qu'un simple Q-Learning (impossible avec un grand nombre d'états) ou un
 - **La Solution DDQN** : Nous utilisons deux réseaux de neurones. Le `Policy Network` choisit la meilleure action, et le `Target Network` (mis à jour plus lentement) évalue la valeur de cette action. Cela stabilise considérablement l'apprentissage mathématique.
 
 ## 2. La Vision du Serpent : Représentation Continue (L'Astuce Principale)
-Le sujet (PDF) imposait une contrainte majeure : **Le serpent ne peut voir qu'en ligne droite dans 4 directions (Haut, Bas, Gauche, Droite)**. Interdiction de lui donner les coordonnées absolues (X, Y) sous peine d'un malus de -42 points.
+Le sujet imposait une contrainte majeure : **Le serpent ne peut voir qu'en ligne droite dans 4 directions (Haut, Bas, Gauche, Droite)**. Interdiction de lui donner les coordonnées absolues (X, Y) sous peine d'un malus de -42 points.
 
 - **L'Ancienne tentative (Catégorielle)** : Au début, le serpent voyait des "blocs" (ex: [Mur, Vide, Pomme]). Mais un réseau de neurones a beaucoup de mal à déduire des distances à partir de listes variables d'objets ou d'identifiants (Embeddings).
 - **Le Game Changer (Distance Inverse)** : Nous avons transformé sa vision en **valeurs continues normalisées (Float32 entre 0.0 et 1.0)**. 
@@ -32,13 +32,15 @@ Suite à l'abandon de la vision catégorielle, nous avons supprimé la couche `n
 - **Entrée** : `nn.Linear(64, 256)` (Prend les 64 floats de distance inverse spatio-temporelle).
 - **Couches cachées** : 256 -> 128 -> 64 (avec des activations `ReLU` pour la non-linéarité).
 - **Sortie** : `nn.Linear(64, 4)` (Prédit la valeur des 4 actions : Haut, Bas, Gauche, Droite).
-Cette structure 100% linéaire ("Fully Connected") est extrêmement rapide à calculer sur CPU, ce qui a permis de contourner les limitations de VirtualBox (pas de GPU physique détecté dans Docker).
+Cette structure 100% linéaire ("Fully Connected") est extrêmement rapide à calculer sur CPU, ce qui a permis de contourner les limitations de GPU physique indisponible.
 
 ## 5. Le Système de Récompenses (Reward Shaping)
 Pour guider le serpent sans le perturber :
-- `+1.0` : Manger une pomme verte (objectif principal).
-- `-1.0` : Mourir (mur, propre queue, pomme rouge).
-- **L'Astuce d'Apprentissage** : Nous avons retiré les micro-récompenses continues (ex: "se rapprocher de la pomme donne +0.01"). Bien que tentantes, ces récompenses "denses" créent du bruit et poussent souvent l'agent à tourner en rond pour accumuler des micro-points au lieu de manger la pomme. *Less is more*.
+- `+10.0` : Manger une pomme verte (objectif principal).
+- `-15.0` : Mourir classiquement (mur, propre queue).
+- `-10.0` : Manger une pomme rouge ou tourner en boucle infinie (timeout).
+- `-0.1` : Pénalité de temps à chaque pas pour forcer à agir vite et ne pas se perdre.
+- **L'Astuce d'Apprentissage** : Nous avons retiré les micro-récompenses continues (ex: "se rapprocher de la pomme donne +0.01"). Bien que tentantes, ces récompenses "denses" créent du bruit et poussent souvent l'agent à tourner en rond pour accumuler des micro-points au lieu de manger la pomme.
 
 ## 6. Infrastructure & Docker (Contournement Hardware)
 Le développement sous GUI Linux / VirtualBox empêchait l'accès natif à l'accélération X11 (interface graphique) et au GPU (Nvidia) depuis Docker.
