@@ -7,8 +7,23 @@ build:
 	docker compose build
 
 # Lance le programme principal (main.py)
-run:
-	docker compose run --rm $(SERVICE) python main.py
+train10:
+	docker compose run --rm $(SERVICE) python main.py -sessions 10 -save models/10sess.pth -visual off
+
+train100:
+	docker compose run --rm $(SERVICE) python main.py -sessions 100 -save models/100sess.pth -visual off
+
+train1000:
+	docker compose run --rm $(SERVICE) python main.py -sessions 1000 -save models/1000sess.pth -visual off
+
+eval10:
+	docker compose run --rm $(SERVICE) python main.py -sessions 5 load models/10sess.pth -visual on -dontlearn
+
+eval100:
+	docker compose run --rm $(SERVICE) python main.py -sessions 5 load models/100sess.pth -visual on -dontlearn
+
+eval1000:
+	docker compose run --rm $(SERVICE) python main.py -sessions 5 load models/1000sess.pth -visual on -dontlearn
 
 # Règle sur mesure pour lancer notre test de la Brique 1
 test_board:
