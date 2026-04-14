@@ -1,12 +1,13 @@
 # Nom du service dans le docker-compose
 SERVICE = agent
 
-all: build run
+all: build train eval
 
 build:
 	docker compose build
 
-# Lance le programme principal (main.py)
+train: train10 train100 train1000
+
 train10:
 	docker compose run --rm $(SERVICE) python main.py -sessions 10 -save models/10sess.pth -visual off
 
@@ -49,4 +50,4 @@ fclean: clean
 # Reconstruit tout de zéro
 re: fclean build
 
-.PHONY: all build run test norme clean fclean re
+.PHONY: all build train train10 train100 train1000 eval eval10 eval100 eval1000 test_board test_env norme clean fclean re
