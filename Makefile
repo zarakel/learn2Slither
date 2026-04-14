@@ -16,6 +16,8 @@ train100:
 train1000:
 	docker compose run --rm $(SERVICE) python main.py -sessions 1000 -save models/1000sess.pth -visual off
 
+eval: eval10 eval100 eval 1000
+
 eval10:
 	docker compose run --rm $(SERVICE) python main.py -sessions 5 load models/10sess.pth -visual on -dontlearn
 
