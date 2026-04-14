@@ -18,6 +18,7 @@ services:
       - /dev/dri:/dev/dri         # Donne l'accès au matériel graphique au conteneur
     # Nécessaire pour l'affichage graphique sous Linux
     network_mode: host
+    ipc: host
     # stdin_open et tty permettent de garder le terminal interactif 
     # pour saisir les commandes clavier (z, q, s, d)
     stdin_open: true
