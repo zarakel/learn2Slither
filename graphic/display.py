@@ -278,12 +278,15 @@ class NokiaUI:
     # INIT / TEARDOWN
     # ------------------------------------------------------------------
 
-    def init(self):
-        pygame.init()
-        pygame.display.set_caption("Learn2Slither")
+    def _resize_display(self):
         w = self.board_size * CELL_PX * SCALE
         h = self.board_size * CELL_PX * SCALE + (HUD_TOP + HUD_BOT) * SCALE
         self._surface = pygame.display.set_mode((w, h))
+
+    def init(self):
+        pygame.init()
+        pygame.display.set_caption("Learn2Slither")
+        self._resize_display()
         self._clock = pygame.time.Clock()
         self._build_sprites()
 
@@ -401,6 +404,7 @@ class NokiaUI:
             self.sessions = max(1, self.sessions + direction * 1)
         elif key == "board":
             self.board_size = max(5, min(40, self.board_size + direction * 1))
+            self._resize_display()
         elif key == "visual":
             self.visual_on = not self.visual_on
         elif key == "learn":
