@@ -1,10 +1,10 @@
-# 🚀 Learn2Slither : Apprentissage par Renforcement Profond (Snake IA)
+# Learn2Slither : Apprentissage par Renforcement Profond (Snake IA)
 
 *Un agent autonome entraîné via Double Deep Q-Networks (DDQN) sur un environnement personnalisé sous contraintes de vision strictes.*
 
 ---
 
-## 🌟 Présentation & Points Forts du Projet
+## Présentation & Points Forts du Projet
 
 Ce projet dépasse le cadre d'un simple jeu Snake pour devenir une **vitrine technique d'ingénierie en IA (Reinforcement Learning)**. Face à des contraintes de vision et de ressources, des solutions élégantes ont été implémentées pour permettre à un réseau de neurones d'acquérir des réflexes de survie complexes.
 
@@ -15,7 +15,7 @@ Ce projet dépasse le cadre d'un simple jeu Snake pour devenir une **vitrine tec
 
 ---
 
-## 🧠 Techniques & Compétences Acquises
+## Techniques & Compétences Acquises
 
 La réalisation de ce projet a permis de maîtriser les concepts clés de l'Intelligence Artificielle moderne et de l'ingénierie logicielle :
 
@@ -27,7 +27,7 @@ La réalisation de ce projet a permis de maîtriser les concepts clés de l'Inte
 
 ---
 
-## 🛠️ Commandes Importantes
+## Commandes Importantes
 
 *Entraîner le Cerveau (1000 sessions, mode rapide) :*
 ```bash
@@ -51,7 +51,7 @@ docker compose run --rm agent python main.py -visual on -step-by-step load model
 
 ---
 
-## 🔬 Architecture & Détails de l'Apprentissage
+## Architecture & Détails de l'Apprentissage
 
 ### 1. Le Cerveau : Double Deep Q-Network (DDQN)
 Plutôt qu'un simple Q-Learning (impossible avec un grand nombre d'états) ou un DQN classique, nous utilisons un **Double-DQN (DDQN)**.
