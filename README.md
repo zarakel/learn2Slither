@@ -1,97 +1,97 @@
-# Learn2Slither : Apprentissage par Renforcement Profond (Snake IA)
+# Learn2Slither: Deep Reinforcement Learning (Snake AI)
 
-*Un agent autonome entraîné via Double Deep Q-Networks (DDQN) sur un environnement personnalisé sous contraintes de vision strictes.*
-
----
-
-## Présentation & Points Forts du Projet
-
-Ce projet dépasse le cadre d'un simple jeu Snake pour devenir une **vitrine technique d'ingénierie en IA (Reinforcement Learning)**. Face à des contraintes de vision et de ressources, des solutions élégantes ont été implémentées pour permettre à un réseau de neurones d'acquérir des réflexes de survie complexes.
-
-* **Robustesse de la Modélisation (Gymnasium)** : Customisation complète de l'API Gymnasium pour la simulation physique du plateau, permettant à l'agent d'apprendre sur n'importe quelle taille de carte (de 10x10 à 40x40).
-* **Vision Relative Continue & Temporelle** : Le serpent perçoit les distances inverses de son environnement (Murs, Corps, Pomme Verte, Pomme Rouge) dans 4 directions, éliminant tout biais de coordonnées absolues. L'empilement temporel (Frame Stacking des 4 dernières frames) permet de surmonter la perte de dynamique temporelle (POMDP).
-* **Stabilité d'Apprentissage par Double DQN** : Résolution du problème de surestimation des Q-Values (biais classique du DQN) par l'utilisation de deux réseaux de neurones synchronisés (Policy et Target Network).
-* **Interface Rétro Immersive & Débogage** : Une interface graphique nostalgique de type Nokia 3310 codée sous Pygame, incluant une police de caractères matricielle (bitmap) personnalisée et un outil de débogage pas-à-pas de l'agent.
+*An autonomous agent trained via Double Deep Q-Networks (DDQN) on a custom environment under strict vision constraints.*
 
 ---
 
-## Techniques & Compétences Acquises
+## Project Overview & Key Highlights
 
-La réalisation de ce projet a permis de maîtriser les concepts clés de l'Intelligence Artificielle moderne et de l'ingénierie logicielle :
+This project goes beyond a simple Snake game to serve as a **technical showcase of AI engineering (Reinforcement Learning)**. Faced with strict vision and resource constraints, elegant solutions were implemented to enable a neural network to acquire complex survival reflexes.
 
-* **Deep Reinforcement Learning (DRL)** : Conception et réglage d'algorithmes de Q-Learning profond, gestion de la mémoire de rejeu (*Replay Buffer*), et équilibrage Exploration/Exploitation (*Epsilon-greedy decay*).
-* **Reward Engineering** : Conception d'une fonction de récompense efficace (pénalité de temps à chaque pas, punition de boucle infinie, etc.) pour guider l'apprentissage vers des comportements optimaux et robustes.
-* **Deep Learning avec PyTorch** : Création de réseaux de neurones MLP (Multi-Layer Perceptron), gestion de l'inférence en temps réel et de la rétropropagation (optimiseur Adam, MSE Loss).
-* **Conteneurisation (Docker & Docker Compose)** : Isolation totale de l'environnement d'exécution, gestion du partage du serveur X11 local pour afficher l'interface Pygame depuis un conteneur, et entraînement en mode *headless* (sans interface graphique) pour démultiplier la vitesse d'apprentissage.
-* **Tests unitaires et simulations physiques** : Développement de bancs d'essais interactifs pour isoler le moteur du jeu de l'apprentissage machine.
+* **Robust Modeling (Gymnasium)**: Complete customization of the Gymnasium API for the physical simulation of the board, allowing the agent to learn on any map size (from 10x10 to 40x40).
+* **Continuous & Temporal Relative Vision**: The snake perceives the inverse distances of its environment (Walls, Body, Green Apple, Red Apple) in 4 directions, eliminating any absolute coordinate bias. Temporal stacking (Frame Stacking of the last 4 frames) overcomes the loss of temporal dynamics.
+* **Double DQN Learning Stability**: Solving the Q-Value overestimation problem (a classic DQN bias) by using two synchronized neural networks (Policy and Target Network).
+* **Retro Immersive Interface & Debugging**: A nostalgic Nokia 3310-like graphical interface coded in Pygame, including a custom bitmap font and a step-by-step agent debugging tool.
 
 ---
 
-## Commandes Importantes
+## Techniques & Acquired Skills
 
-*Entraîner le Cerveau (1000 sessions, mode rapide) :*
+Completing this project provided mastery of key modern Artificial Intelligence and software engineering concepts:
+
+* **Deep Reinforcement Learning (DRL)**: Designing and tuning Deep Q-Learning algorithms, managing replay memory (*Replay Buffer*), and balancing Exploration/Exploitation (*Epsilon-greedy decay*).
+* **Reward Engineering**: Designing an effective reward function (time penalty at each step, infinite loop punishment, etc.) to guide learning toward optimal and robust behaviors.
+* **Deep Learning with PyTorch**: Creating MLP (Multi-Layer Perceptron) neural networks, managing real-time inference and backpropagation (Adam optimizer, MSE Loss).
+* **Containerization (Docker & Docker Compose)**: Total isolation of the execution environment, managing the sharing of the local X11 server to display the Pygame interface from a container, and training in *headless* mode (without graphical interface) to multiply learning speed.
+* **Unit Testing & Physical Simulations**: Developing interactive test benches to isolate the game engine from machine learning.
+
+---
+
+## Important Commands
+
+*Train the Brain (1000 sessions, fast mode):*
 ```bash
 docker compose run --rm agent python main.py -sessions 1000 -save models/1000sess.pth -visual off
 ```
 
-*Voir l'agent jouer (sans explorer aléatoirement) :*
+*Watch the agent play (without random exploration):*
 ```bash
 docker compose run --rm agent python main.py -visual on load models/1000sess.pth -sessions 5 -dontlearn
 ```
 
-*Personnaliser la taille du plateau de jeu (ex: une grande carte de 20x20) :*
+*Customize the board size (e.g., a large 20x20 map):*
 ```bash
 docker compose run --rm agent python main.py -board_size 20 -sessions 500 -visual off
 ```
 
-*Débogage visuel pas-à-pas (met le jeu en pause après chaque action, idéal pour analyser les décisions de l'agent) :*
+*Visual step-by-step debugging (pauses the game after each action, ideal for analyzing the agent's decisions):*
 ```bash
 docker compose run --rm agent python main.py -visual on -step-by-step load models/1000sess.pth
 ```
 
 ---
 
-## Architecture & Détails de l'Apprentissage
+## Architecture & Training Details
 
-### 1. Le Cerveau : Double Deep Q-Network (DDQN)
-Plutôt qu'un simple Q-Learning (impossible avec un grand nombre d'états) ou un DQN classique, nous utilisons un **Double-DQN (DDQN)**.
-- **Le Problème du DQN classique** : Il a tendance à surestimer les Q-Values (la récompense attendue), ce qui pousse le serpent à prendre des décisions trop optimistes et à foncer dans les murs en pensant survivre.
-- **La Solution DDQN** : Nous utilisons deux réseaux de neurones. Le `Policy Network` choisit la meilleure action, et le `Target Network` (mis à jour plus lentement) évalue la valeur de cette action. Cela stabilise considérablement l'apprentissage mathématique.
+### 1. The Brain: Double Deep Q-Network (DDQN)
+Rather than simple Q-Learning (impossible with a large number of states) or classic DQN, we use a **Double-DQN (DDQN)**.
+- **The Classic DQN Problem**: It tends to overestimate Q-Values (the expected reward), which drives the snake to make overly optimistic decisions and crash into walls thinking it will survive.
+- **The DDQN Solution**: We use two neural networks. The `Policy Network` selects the best action, and the `Target Network` (updated more slowly) evaluates the value of this action. This considerably stabilizes the mathematical learning process.
 
-### 2. La Vision du Serpent : Représentation Continue (L'Astuce Principale)
-Le sujet imposait une contrainte majeure : **Le serpent ne peut voir qu'en ligne droite dans 4 directions (Haut, Bas, Gauche, Droite)**. Interdiction de lui donner les coordonnées absolues (X, Y) sous peine d'un malus de -42 points.
+### 2. Snake's Vision: Continuous Representation (The Main Trick)
+The subject imposed a major constraint: **The snake can only see in a straight line in 4 directions (Up, Down, Left, Right)**. Giving it absolute coordinates (X, Y) was forbidden, under penalty of a -42 point penalty.
 
-- **L'Ancienne tentative (Catégorielle)** : Au début, le serpent voyait des "blocs" (ex: [Mur, Vide, Pomme]). Mais un réseau de neurones a beaucoup de mal à déduire des distances à partir de listes variables d'objets ou d'identifiants (Embeddings).
-- **Le Game Changer (Distance Inverse)** : Nous avons transformé sa vision en **valeurs continues normalisées (Float32 entre 0.0 et 1.0)**. 
-  Pour chaque direction, l'agent calcule `1.0 / distance` jusqu'au prochain :
-  1. `Mur`
-  2. `Corps (Queue)`
-  3. `Pomme Verte`
-  4. `Pomme Rouge`
+- **The Previous Attempt (Categorical)**: Initially, the snake saw "blocks" (e.g., [Wall, Empty, Apple]). But a neural network struggles to deduce distances from variable lists of objects or identifiers (Embeddings).
+- **The Game Changer (Inverse Distance)**: We transformed its vision into **normalized continuous values (Float32 between 0.0 and 1.0)**. 
+  For each direction, the agent calculates `1.0 / distance` to the nearest:
+  1. `Wall`
+  2. `Body (Tail)`
+  3. `Green Apple`
+  4. `Red Apple`
   
-  *Pourquoi 1/distance ?* Si une pomme est à 1 case, la valeur est `1.0` (signal très fort). Si elle est à 10 cases, la valeur est `0.1`. Si l'objet n'existe pas dans cette direction, la valeur est `0.0`. Le réseau comprend désormais intuitivement la notion de **proximité et de danger immédiat**.
+  *Why 1/distance?* If an apple is 1 square away, the value is `1.0` (very strong signal). If it is 10 squares away, the value is `0.1`. If the object does not exist in that direction, the value is `0.0`. The network now intuitively understands the concept of **proximity and immediate danger**.
 
-### 3. La Mémoire à Court-Terme (Frame Stacking)
-Le jeu de Snake est un **POMDP** (Partially Observable Markov Decision Process). Si l'on donne au serpent uniquement l'image de l'instant T, il ne peut pas savoir s'il monte ou s'il descend (il ne connaît pas sa direction actuelle).
-- **Technique** : Nous empilons les **4 dernières frames** (visions) du serpent.
-- **Résultat** : L'état d'entrée n'est plus de 16 valeurs (4 directions × 4 caractéristiques), mais de **64 valeurs**. Le réseau de neurones peut déduire le mouvement (la dynamique) à partir de la différence entre ces 4 images temporelles.
+### 3. Short-Term Memory (Frame Stacking)
+The Snake game is a **POMDP** (Partially Observable Markov Decision Process). If we only give the snake the image at time T, it cannot know if it is moving up or down (it does not know its current direction).
+- **Technique**: We stack the **last 4 frames** (visions) of the snake.
+- **Result**: The input state is no longer 16 values (4 directions × 4 features), but **64 values**. The neural network can deduce movement (dynamics) from the difference between these 4 temporal images.
 
-### 4. Architecture du Réseau de Neurones (MLP)
-Suite à l'abandon de la vision catégorielle, nous avons supprimé la couche `nn.Embedding` (qui ralentissait le CPU et n'était plus adaptée).
-- **Entrée** : `nn.Linear(64, 256)` (Prend les 64 floats de distance inverse spatio-temporelle).
-- **Couches cachées** : 256 -> 128 -> 64 (avec des activations `ReLU` pour la non-linéarité).
-- **Sortie** : `nn.Linear(64, 4)` (Prédit la valeur des 4 actions : Haut, Bas, Gauche, Droite).
-Cette structure 100% linéaire ("Fully Connected") est extrêmement rapide à calculer sur CPU, ce qui a permis de contourner les limitations de GPU physique indisponible.
+### 4. Neural Network Architecture (MLP)
+Following the abandonment of categorical vision, we removed the `nn.Embedding` layer (which slowed down the CPU and was no longer suitable).
+- **Input**: `nn.Linear(64, 256)` (Takes the 64 spatio-temporal inverse distance floats).
+- **Hidden Layers**: 256 -> 128 -> 64 (with `ReLU` activations for non-linearity).
+- **Output**: `nn.Linear(64, 4)` (Predicts the value of the 4 actions: Up, Down, Left, Right).
+This 100% linear ("Fully Connected") structure is extremely fast to compute on CPU, which allowed us to bypass the physical GPU limitations.
 
-### 5. Le Système de Récompenses
-Pour guider le serpent sans le perturber :
-- `+10.0` : Manger une pomme verte (objectif principal).
-- `-15.0` : Mourir classiquement (mur, propre queue).
-- `-10.0` : Manger une pomme rouge ou tourner en boucle infinie (timeout).
-- `-0.1` : Pénalité de temps à chaque pas pour forcer à agir vite et ne pas se perdre.
-- **L'Astuce d'Apprentissage** : Nous avons retiré les micro-récompenses continues (ex: "se rapprocher de la pomme donne +0.01"). Bien que tentantes, ces récompenses "denses" créent du bruit et poussent souvent l'agent à tourner en rond pour accumuler des micro-points au lieu de manger la pomme.
+### 5. Reward System
+To guide the snake without confusing it:
+- `+10.0`: Eating a green apple (main objective).
+- `-15.0`: Classic death (wall, own tail).
+- `-10.0`: Eating a red apple or looping infinitely (timeout).
+- `-0.1`: Time penalty at each step to force fast action and prevent getting lost.
+- **The Learning Trick**: We removed continuous micro-rewards (e.g., "getting closer to the apple gives +0.01"). Although tempting, these "dense" rewards create noise and often lead the agent to run in circles to accumulate micro-points instead of eating the apple.
 
-### 6. Infrastructure & Docker (Contournement Hardware)
-Le développement sous GUI Linux / VirtualBox empêchait l'accès natif à l'accélération X11 (interface graphique) et au GPU (Nvidia) depuis Docker.
-- **Solution d'entraînement** : Entraînement en mode `headless` (sans interface visuelle) via l'argument `-visual off`. Pygame est désactivé en fond de tâche, ce qui multiplie la vitesse d'apprentissage de l'agent par 100.
-- **Solution de débogage visuel** : Ouverture du serveur graphique X11 à Docker localement via `xhost +local:docker`, permettant d'évaluer le modèle `.pth` avec l'argument `-visual on`.
+### 6. Infrastructure & Docker (Hardware Workaround)
+Development under GUI Linux / VirtualBox prevented native access to X11 acceleration (graphical interface) and GPU (Nvidia) from Docker.
+- **Training Solution**: Training in `headless` mode (without visual interface) via the `-visual off` argument. Pygame is disabled in the background, which multiplies the agent's learning speed by 100.
+- **Visual Debugging Solution**: Opening the graphics server X11 to Docker locally via `xhost +local:docker`, allowing the evaluation of the `.pth` model with the `-visual on` argument.
